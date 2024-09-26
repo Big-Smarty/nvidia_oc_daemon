@@ -141,11 +141,11 @@ TODO
 - [x] load config file
 - [x] apply config
 - [ ] Add GUI
-- [?] build time machine
+- [ ] build time machine
 - [ ] Multi-language Support
     - [ ] Chinese
     - [ ] Spanish
-    - [ ] French (this will NEVER be implemented for I HATE the french language
+    - [ ] French (this will NEVER be implemented for I HATE the french language)
 
 See the [open issues](https://github.com/Big-Smarty/nvidia_oc_daemon/issues) for a full list of proposed features (and known issues).
 
@@ -170,7 +170,7 @@ Don't forget to give the project a star! Thanks again!
 ### Top contributors:
 
 <a href="https://github.com/Big-Smarty/nvidia_oc_daemon/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=othneildrew/Best-README-Template" alt="contrib.rocks image" />
+  <p>Contributors</p>
 </a>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
