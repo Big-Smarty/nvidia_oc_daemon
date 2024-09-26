@@ -1,0 +1,18 @@
+[package]
+name = "nvidia_oc_daemon"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# logging
+log = "0.4"
+simplelog = "0.12"
+
+# config loading
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+notify = "6.1"
+
+# nvml
+nvml-wrapper = "0.10"
+nvml-wrapper-sys = "0.8"
