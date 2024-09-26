@@ -76,7 +76,6 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
 GreenWithEnvy is a great tool to tweak your NVIDIA GPU. Unfortunately, as it works with X.Org coolbits, it doesn't work on wayland (at all). An alternative to just set your GPU's power settings would be the official nvidia-settings, but, as you might have guessed, it also only works on X.Org.
 
 Here's why you should use NVIDIA_OC:
