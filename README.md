@@ -1,218 +1,131 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
-<a id="readme-top"></a>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
+# NVIDIA_OC Daemon
 
-
-
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
-
-
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
+<p align="center">
   <a href="https://github.com/Big-Smarty/nvidia_oc_daemon">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="images/logo.png" alt="NVIDIA_OC logo" width="80" height="80">
   </a>
+</p>
 
-  <h3 align="center">The NVIDIA_OC systemd daemon</h3>
+NVIDIA_OC Daemon is a Rust daemon for applying NVIDIA GPU overclocking settings through NVML. It is intended for systems where X.Org Coolbits-based tools such as GreenWithEnvy or `nvidia-settings` are not available or not desirable, including Wayland setups.
 
-  <p align="center">
-    An awesome tool to tweak your NVIDIA GPU regardless of your graphics platform! 
-    <br />
-    <!-- <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a> -->
-    <br />
-    <br />
-    <!--<a href="https://github.com/othneildrew/Best-README-Template">View Demo</a> -->
-    ·
-    <!-- <a href="https://github.com/othneildrew/Best-README-Template/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>-->
-    ·
-    <!-- <a href="https://github.com/othneildrew/Best-README-Template/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>-->
-  </p>
-</div>
+The daemon loads a TOML configuration from `/etc/nvidia_oc/config`, applies configured GPU clock offsets, memory clock offsets, and power limits, then watches `/etc/nvidia_oc` for changes and reloads the configuration after a debounce period.
 
+## Warning
 
+Overclocking and changing GPU power limits can crash the system, damage hardware, void warranties, or make a machine unbootable. This project cannot validate every GPU, driver, firmware, thermal setup, or power delivery configuration.
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
+Use this software entirely at your own risk. Review every value before applying it, understand the limits of your hardware, and have a recovery plan before running the daemon automatically at boot.
 
+## Features
 
+- Applies NVIDIA GPU settings without X.Org, Coolbits, GreenWithEnvy, or `nvidia-settings`.
+- Uses NVML through `nvml-wrapper` and direct NVML bindings.
+- Generates `/etc/nvidia_oc/config` on first run from the currently reported GPU settings.
+- Applies per-device GPU frequency offsets, memory frequency offsets, and power management limits.
+- Watches `/etc/nvidia_oc` recursively and reloads modified configuration after a 5-second debounce.
+- Logs to the terminal and to `demon.log` in the process working directory.
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
+## Requirements
 
-GreenWithEnvy is a great tool to tweak your NVIDIA GPU. Unfortunately, as it works with X.Org coolbits, it doesn't work on wayland (at all). An alternative to just set your GPU's power settings would be the official nvidia-settings, but, as you might have guessed, it also only works on X.Org.
+- Linux with a supported NVIDIA GPU.
+- NVIDIA driver with NVML available as `libnvidia-ml.so`.
+- Rust toolchain for building from source.
+- Root privileges, or equivalent permissions, for creating `/etc/nvidia_oc/config` and applying NVML overclocking and power-limit settings.
 
-Here's why you should use NVIDIA_OC:
-* You paid for the whole speedometer, so you're gonna use the whole spee- no wait. You paid for your whole GPU, so you should be able to use all of your GPU and not be limited by your graphics platform of choice.
-* YEARS of using NVIDIA GPUs with default settings on wayland, but NO REAL WORLD USE found to leave potential performance untapped!
-* You should LOVE yourself NOW and finally get those 5% more FPS out of your device! :smile:
+Some laptop GPUs or driver/device combinations may not support querying or setting power limits. NVML calls can also fail if the driver, GPU, or permissions do not expose the requested operation.
 
-Of course, no program is perfect, and I can't add failsaves for all possible edge cases for all possible GPUs, so you're on your own risk wise.
-!! I TAKE NO RESPONSIBILITY FOR BRICKED DEVICES!!
-I would assume that overclocking your GPU via programs using NVML (which this project utilizes) would void your warranty, and you guessed it: I won't take any responsibility for that either.
+## Built With
 
-!!I REPEAT: I TAKE NO RESPONSIBILITY FOR ANYTHING THAT HAPPENED BECAUSE YOU USED THIS PROGRAM!! YOU USED THIS ON YOUR OWN BEHALF AND SHOULD TAKE ANY REPERCUSSIONS BY YOURSELF AS WELL!!
+- [Rust](https://www.rust-lang.org/)
+- [log](https://github.com/rust-lang/log)
+- [simplelog](https://github.com/baoyachi/simple-log)
+- [serde](https://github.com/serde-rs/serde)
+- [toml](https://github.com/toml-rs/toml)
+- [notify](https://github.com/notify-rs/notify)
+- [NVIDIA Management Library](https://developer.nvidia.com/management-library-nvml)
+- [nvml-wrapper](https://github.com/Cldfire/nvml-wrapper)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## Installation
 
+Build the daemon from source:
 
+```sh
+cargo build --release
+```
 
-### Built With
+Install the binary somewhere appropriate for local services:
 
-This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
+```sh
+sudo install -m 0755 target/release/nvidia_oc_daemon /usr/local/bin/nvidia_oc_daemon
+```
 
-* [log][log-url]
-* [simplelog][simplelog-url]
-* [serde][serde-url]
-* [toml][toml-url]
-* [notify][notify-url]
-* [nvml][nvml-url]
-* [nvml-wrapper][nvml-wrapper-url]
+This repository does not currently ship a systemd unit. If you want the daemon to start at boot, create and manage a local service unit for your system after confirming the configuration is safe.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## Configuration
 
+The configuration path is currently hardcoded:
 
+```text
+/etc/nvidia_oc/config
+```
 
-<!-- GETTING STARTED -->
-## Getting Started
+On first run, the daemon creates `/etc/nvidia_oc/config` by querying each detected GPU and writing the current offsets and power limit. Edit that file to the values you want the daemon to apply.
 
-TODO
+Example:
 
-### Prerequisites
-TODO
+```toml
+[[sets]]
+device_index = 0
+gpu_freq_offset = 100
+mem_freq_offset = 500
+power_limit = 250000
 
-### Installation
+[[sets]]
+device_index = 1
+gpu_freq_offset = 0
+mem_freq_offset = 0
+power_limit = 220000
+```
 
-TODO
+Fields:
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+- `device_index`: NVML device index to configure.
+- `gpu_freq_offset`: GPU/GPC clock VF offset.
+- `mem_freq_offset`: memory clock VF offset.
+- `power_limit`: NVML power management limit, in milliwatts.
 
+Run the daemon manually while testing:
 
+```sh
+sudo /usr/local/bin/nvidia_oc_daemon
+```
 
-<!-- USAGE EXAMPLES -->
-## Usage
-TODO
+After startup, edits under `/etc/nvidia_oc` trigger a reload. The watcher ignores rapid repeated modify events until the debounce period has elapsed.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## Caveats
 
+- The config file path is not configurable at runtime.
+- The daemon applies all configured sets on startup and after accepted config changes.
+- Invalid TOML falls back to querying current GPU state rather than applying the malformed file.
+- Several NVML and file operations currently fail fast if the driver, device, permissions, or filesystem state are not suitable.
+- No systemd unit is included in the repository.
+- The log file name is currently `demon.log`.
 
-
-<!-- ROADMAP -->
 ## Roadmap
 
-- [x] create daemon
-- [x] load config file
-- [x] apply config
-- [ ] Add GUI
-- [ ] build time machine
-- [ ] Multi-language Support
-    - [ ] Chinese
-    - [ ] Spanish
-    - [ ] French (this will NEVER be implemented for I HATE the french language)
+- [x] Create daemon process.
+- [x] Load configuration file.
+- [x] Apply configured GPU settings.
+- [ ] Add a GUI.
 
-See the [open issues](https://github.com/Big-Smarty/nvidia_oc_daemon/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- CONTRIBUTING -->
-## Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Top contributors:
-
-<a href="https://github.com/Big-Smarty/nvidia_oc_daemon/graphs/contributors">
-  <p>Contributors</p>
-</a>
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the MIT License. See [LICENSE.txt](LICENSE.txt) for details.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- CONTACT -->
-## Contact
-
-Big Smarty - [@youre_never_getting_my_twitter](https://twitter.com/) - my@privacy.com
-
-Project Link: [https://github.com/Big-Smarty/nvidia_oc_daemon](https://github.com/Big-Smarty/nvidia_oc_daemon)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
-I've ~~stolen~~ been inspired by the following sources:
 
-* [Dreaming-Codes CLI nvidia overclocking tool](https://github.com/Dreaming-Codes/nvidia_oc/)
+Inspired by [Dreaming-Codes nvidia_oc](https://github.com/Dreaming-Codes/nvidia_oc/).
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## Project Link
 
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[nvml-url]: https://developer.nvidia.com/management-library-nvml
-[nvml-wrapper-url]:https://github.com/Cldfire/nvml-wrapper
-[rust-url]: https://www.rust-lang.org/
-[log-url]: https://github.com/rust-lang/log
-[simplelog-url]: https://github.com/baoyachi/simple-log
-[serde-url]: https://github.com/serde-rs/serde
-[toml-url]: https://github.com/toml-rs/toml
-[notify-url]: https://github.com/notify-rs/notify.git
+[https://github.com/Big-Smarty/nvidia_oc_daemon](https://github.com/Big-Smarty/nvidia_oc_daemon)
